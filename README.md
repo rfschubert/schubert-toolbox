@@ -1,8 +1,19 @@
 # Schubert Toolbox
 
-## Overview
 
 Schubert Toolbox is a multi-language SDK collection that provides standardized tools and utilities for development.
+
+I am a Senior Developer and CTO with extensive experience in developing SaaS, BaaS, and enterprise solutions. I don't claim to own the ultimate truth in software development, but I firmly believe that certain data standards and practices can be universally applied across nearly any project.
+
+These patterns and standards should be ready-made, framework- and language-agnostic, and designed to work seamlessly within any kind of project. The goal of Schubert Toolbox is to simplify the developer's life by providing these robust, tested building blocks so developers can focus on the unique business logic and innovation of their systems, rather than reinventing the basics every time.
+
+I am migrating all my SDKs, helpers, and sanitizers developed over the years into this project and opening it to the community for developers who want to use them as well. This gives access to libraries that are battle-tested in real companies, already well optimized, and with the help of the community can become even more refined.
+
+With just a few lines of code, developers will have access to numerous tools, saving time and avoiding the need for extensive testing, since this toolbox will be extensively tested and maintained.
+
+I will also be including improvements I have been designing for some of these libraries for a long time and am open to pull requests for improvements or new drivers. The contracts in the project aim to facilitate adoption and implementation of new functionalities.
+
+I will not migrate everything at once, but whenever possible, I will implement contracts, schemas, classes, drivers, and managers as I continue working on my projects. Additionally, I will be making the same implementations available for other languages as I revisit my older projects, such as Dart, Go, Rust, and others, ensuring feature parity across all supported languages.
 
 ## Project Structure
 
