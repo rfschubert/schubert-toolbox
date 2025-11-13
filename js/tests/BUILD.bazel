@@ -16,12 +16,53 @@ filegroup(
     ],
 )
 
-# Exemplo de genrule para executar Jest (requer Jest instalado via npm)
+# Test execution targets using genrule for Jest
 genrule(
-    name = "run_tests",
-    srcs = [":test_srcs"],
-    outs = ["test_results.txt"],
-    cmd = "cd $$(dirname $(location //js:all)) && npm test > $@ 2>&1 || echo 'Jest not found' > $@",
-    tags = ["manual"],
+    name = "run_unit_tests",
+    srcs = [":test_srcs", "//js:srcs"],
+    outs = ["unit_test_results.txt"],
+    cmd = """
+        cd js && \
+        if [ -f "package.json" ] && [ -d "node_modules" ]; then \
+            npm run test:unit > $(location unit_test_results.txt) 2>&1 || \
+            (echo "Unit tests failed" > $(location unit_test_results.txt) && exit 1); \
+        else \
+            echo "Jest not available or dependencies not installed" > $(location unit_test_results.txt); \
+        fi
+    """,
+    tags = ["js", "unit"],
+)
+
+genrule(
+    name = "run_integration_tests",
+    srcs = [":test_srcs", "//js:srcs"],
+    outs = ["integration_test_results.txt"],
+    cmd = """
+        cd js && \
+        if [ -f "package.json" ] && [ -d "node_modules" ]; then \
+            npm run test:integration > $(location integration_test_results.txt) 2>&1 || \
+            (echo "Integration tests failed" > $(location integration_test_results.txt) && exit 1); \
+        else \
+            echo "Jest not available or dependencies not installed" > $(location integration_test_results.txt); \
+        fi
+    """,
+    tags = ["js", "integration"],
+)
+
+# Aggregated test target for all JavaScript tests
+genrule(
+    name = "run_all_tests",
+    srcs = [":test_srcs", "//js:srcs"],
+    outs = ["all_test_results.txt"],
+    cmd = """
+        cd js && \
+        if [ -f "package.json" ] && [ -d "node_modules" ]; then \
+            npm test > $(location all_test_results.txt) 2>&1 || \
+            (echo "All JavaScript tests failed" > $(location all_test_results.txt) && exit 1); \
+        else \
+            echo "Jest not available or dependencies not installed" > $(location all_test_results.txt); \
+        fi
+    """,
+    tags = ["js", "all"],
 )
 

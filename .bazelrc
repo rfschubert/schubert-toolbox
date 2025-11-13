@@ -1,0 +1,47 @@
+# Bazel configuration for Schubert Toolbox
+
+# Build settings
+build --enable_platform_specific_config
+build --incompatible_strict_action_env
+
+# Test settings
+test --test_output=errors
+test --test_summary=detailed
+test --test_verbose_timeout_warnings
+
+# Performance optimizations
+build --jobs=auto
+build --local_ram_resources=HOST_RAM*0.75
+build --local_cpu_resources=HOST_CPUS*0.75
+
+# Cache settings
+build --disk_cache=~/.cache/bazel
+build --repository_cache=~/.cache/bazel/repository
+
+# Platform-specific configurations
+build:linux --copt=-fdiagnostics-color=always
+build:macos --copt=-fcolor-diagnostics
+
+# CI-specific configuration
+build:ci --loading_phase_threads=1
+build:ci --jobs=2
+build:ci --local_ram_resources=2048
+build:ci --local_cpu_resources=2
+build:ci --verbose_failures
+build:ci --test_output=all
+
+# Development configuration
+build:dev --compilation_mode=fastbuild
+build:dev --test_output=streamed
+build:dev --verbose_failures
+
+# Release configuration  
+build:release --compilation_mode=opt
+build:release --strip=always
+
+# Language-specific configurations
+build:python --python_top=//tools/python:python3_runtime
+build:python --test_env=PYTHONPATH
+
+# Try to import user-specific configuration
+try-import %workspace%/.bazelrc.user

@@ -29,3 +29,48 @@ filegroup(
     ],
 )
 
+# Aggregated test execution targets
+genrule(
+    name = "run_python_tests",
+    srcs = ["//python/tests:run_all_tests"],
+    outs = ["python_test_summary.txt"],
+    cmd = "cp $(location //python/tests:run_all_tests) $@",
+    tags = ["python", "tests"],
+)
+
+genrule(
+    name = "run_php_tests",
+    srcs = ["//php/tests:run_all_tests"],
+    outs = ["php_test_summary.txt"],
+    cmd = "cp $(location //php/tests:run_all_tests) $@",
+    tags = ["php", "tests"],
+)
+
+genrule(
+    name = "run_js_tests",
+    srcs = ["//js/tests:run_all_tests"],
+    outs = ["js_test_summary.txt"],
+    cmd = "cp $(location //js/tests:run_all_tests) $@",
+    tags = ["js", "tests"],
+)
+
+# Run all SDK tests
+genrule(
+    name = "run_all_sdk_tests",
+    srcs = [
+        "//python/tests:run_all_tests",
+        "//php/tests:run_all_tests",
+        "//js/tests:run_all_tests",
+    ],
+    outs = ["all_sdk_test_summary.txt"],
+    cmd = """
+        echo "=== Python Test Results ===" > $@ && \
+        cat $(location //python/tests:run_all_tests) >> $@ && \
+        echo "=== PHP Test Results ===" >> $@ && \
+        cat $(location //php/tests:run_all_tests) >> $@ && \
+        echo "=== JavaScript Test Results ===" >> $@ && \
+        cat $(location //js/tests:run_all_tests) >> $@
+    """,
+    tags = ["all", "tests"],
+)
+

@@ -1,0 +1,199 @@
+name: Selective SDK Testing
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      python-changed: ${{ steps.changes.outputs.python }}
+      php-changed: ${{ steps.changes.outputs.php }}
+      js-changed: ${{ steps.changes.outputs.js }}
+      core-changed: ${{ steps.changes.outputs.core }}
+      test-matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: changes
+        uses: tj-actions/changed-files@v40
+        with:
+          files_yaml: |
+            python:
+              - 'python/**'
+            php:
+              - 'php/**'
+            js:
+              - 'js/**'
+            core:
+              - 'docs/**'
+              - 'schemas/**'
+              - 'BUILD.bazel'
+              - 'WORKSPACE'
+              - 'MODULE.bazel'
+              - '.bazelrc'
+              - '.bazelignore'
+              - 'README.md'
+              - 'AGENTS.md'
+
+      - name: Generate test matrix
+        id: matrix
+        run: |
+          matrix="[]"
+          
+          # If core files changed, test all SDKs
+          if [[ "${{ steps.changes.outputs.core }}" == "true" ]]; then
+            matrix='["python", "php", "js"]'
+          else
+            # Build matrix based on changed SDKs
+            sdks=()
+            [[ "${{ steps.changes.outputs.python }}" == "true" ]] && sdks+=("python")
+            [[ "${{ steps.changes.outputs.php }}" == "true" ]] && sdks+=("php")
+            [[ "${{ steps.changes.outputs.js }}" == "true" ]] && sdks+=("js")
+            
+            if [[ ${#sdks[@]} -gt 0 ]]; then
+              matrix=$(printf '%s\n' "${sdks[@]}" | jq -R . | jq -s .)
+            fi
+          fi
+          
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "Generated test matrix: $matrix"
+
+  test-sdks:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.test-matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ${{ fromJson(needs.detect-changes.outputs.test-matrix) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.8.1
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      - name: Setup Python (if needed)
+        if: matrix.sdk == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Setup PHP (if needed)
+        if: matrix.sdk == 'php'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          coverage: none
+
+      - name: Setup Node.js (if needed)
+        if: matrix.sdk == 'js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'js/package-lock.json'
+
+      - name: Install Python dependencies
+        if: matrix.sdk == 'python'
+        run: |
+          cd python
+          pip install -e .
+          pip install pytest
+
+      - name: Install PHP dependencies
+        if: matrix.sdk == 'php'
+        run: |
+          cd php
+          composer install --no-dev --optimize-autoloader
+
+      - name: Install JavaScript dependencies
+        if: matrix.sdk == 'js'
+        run: |
+          cd js
+          npm ci
+
+      - name: Run tests for ${{ matrix.sdk }}
+        run: |
+          echo "Running tests for ${{ matrix.sdk }} SDK..."
+
+          case "${{ matrix.sdk }}" in
+            "python")
+              echo "Executing Python tests..."
+              bazel test //python/tests:run_all_tests --test_output=all --verbose_failures
+              ;;
+            "php")
+              echo "Executing PHP tests..."
+              bazel test //php/tests:run_all_tests --test_output=all --verbose_failures
+              ;;
+            "js")
+              echo "Executing JavaScript tests..."
+              bazel test //js/tests:run_all_tests --test_output=all --verbose_failures
+              ;;
+            *)
+              echo "Unknown SDK: ${{ matrix.sdk }}"
+              exit 1
+              ;;
+          esac
+
+          echo "Tests completed for ${{ matrix.sdk }} SDK"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.sdk }}
+          path: |
+            bazel-testlogs/**/*
+            bazel-bin/**/*test_results.txt
+          retention-days: 7
+
+  summary:
+    needs: [detect-changes, test-sdks]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Summary
+        run: |
+          echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.detect-changes.outputs.test-matrix }}" == "[]" ]]; then
+            echo "✅ No SDK changes detected - no tests executed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "📊 Test Matrix: ${{ needs.detect-changes.outputs.test-matrix }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Check individual SDK results
+            if [[ "${{ needs.test-sdks.result }}" == "success" ]]; then
+              echo "✅ All SDK tests passed" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.test-sdks.result }}" == "failure" ]]; then
+              echo "❌ Some SDK tests failed" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.test-sdks.result }}" == "cancelled" ]]; then
+              echo "⚠️ SDK tests were cancelled" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "⚠️ SDK tests were skipped" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Change Detection Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Python SDK: ${{ needs.detect-changes.outputs.python-changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- PHP SDK: ${{ needs.detect-changes.outputs.php-changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- JavaScript SDK: ${{ needs.detect-changes.outputs.js-changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Core/Shared files: ${{ needs.detect-changes.outputs.core-changed }}" >> $GITHUB_STEP_SUMMARY

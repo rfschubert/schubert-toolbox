@@ -16,13 +16,69 @@ filegroup(
     ],
 )
 
-# Exemplo de py_test (descomente quando rules_python estiver configurado)
-# load("@rules_python//python:defs.bzl", "py_test")
-# py_test(
-#     name = "test_example",
-#     srcs = ["test_example.py"],
-#     deps = [
-#         "//python:schubert_toolbox",
-#     ],
-# )
+# Test execution targets using genrule for pytest
+genrule(
+    name = "run_unit_tests",
+    srcs = [":test_srcs", "//python:srcs"],
+    outs = ["unit_test_results.txt"],
+    cmd = """
+        cd python && \
+        if [ -f "pyproject.toml" ]; then \
+            python -m pytest tests/unit/ -v --tb=short > $(location unit_test_results.txt) 2>&1 || \
+            (echo "Unit tests failed" > $(location unit_test_results.txt) && exit 1); \
+        else \
+            echo "No pyproject.toml found, skipping unit tests" > $(location unit_test_results.txt); \
+        fi
+    """,
+    tags = ["python", "unit"],
+)
+
+genrule(
+    name = "run_integration_tests",
+    srcs = [":test_srcs", "//python:srcs"],
+    outs = ["integration_test_results.txt"],
+    cmd = """
+        cd python && \
+        if [ -f "pyproject.toml" ]; then \
+            python -m pytest tests/integration/ -v --tb=short > $(location integration_test_results.txt) 2>&1 || \
+            (echo "Integration tests failed" > $(location integration_test_results.txt) && exit 1); \
+        else \
+            echo "No pyproject.toml found, skipping integration tests" > $(location integration_test_results.txt); \
+        fi
+    """,
+    tags = ["python", "integration"],
+)
+
+genrule(
+    name = "run_bdd_tests",
+    srcs = [":test_srcs", "//python:srcs"],
+    outs = ["bdd_test_results.txt"],
+    cmd = """
+        cd python && \
+        if [ -f "pyproject.toml" ]; then \
+            python -m pytest tests/bdd/ -v --tb=short > $(location bdd_test_results.txt) 2>&1 || \
+            (echo "BDD tests failed" > $(location bdd_test_results.txt) && exit 1); \
+        else \
+            echo "No pyproject.toml found, skipping BDD tests" > $(location bdd_test_results.txt); \
+        fi
+    """,
+    tags = ["python", "bdd"],
+)
+
+# Aggregated test target for all Python tests
+genrule(
+    name = "run_all_tests",
+    srcs = [":test_srcs", "//python:srcs"],
+    outs = ["all_test_results.txt"],
+    cmd = """
+        cd python && \
+        if [ -f "pyproject.toml" ]; then \
+            python -m pytest tests/ -v --tb=short > $(location all_test_results.txt) 2>&1 || \
+            (echo "All Python tests failed" > $(location all_test_results.txt) && exit 1); \
+        else \
+            echo "No pyproject.toml found, skipping all tests" > $(location all_test_results.txt); \
+        fi
+    """,
+    tags = ["python", "all"],
+)
 

@@ -16,12 +16,53 @@ filegroup(
     ],
 )
 
-# Exemplo de genrule para executar PHPUnit (requer PHPUnit instalado via composer)
+# Test execution targets using genrule for PHPUnit
 genrule(
-    name = "run_tests",
-    srcs = [":test_srcs"],
-    outs = ["test_results.txt"],
-    cmd = "cd $$(dirname $(location //php:all)) && vendor/bin/phpunit tests/ > $@ 2>&1 || echo 'PHPUnit not found' > $@",
-    tags = ["manual"],
+    name = "run_unit_tests",
+    srcs = [":test_srcs", "//php:srcs"],
+    outs = ["unit_test_results.txt"],
+    cmd = """
+        cd php && \
+        if [ -f "composer.json" ] && [ -d "vendor" ]; then \
+            vendor/bin/phpunit tests/Unit/ --verbose > $(location unit_test_results.txt) 2>&1 || \
+            (echo "Unit tests failed" > $(location unit_test_results.txt) && exit 1); \
+        else \
+            echo "PHPUnit not available or dependencies not installed" > $(location unit_test_results.txt); \
+        fi
+    """,
+    tags = ["php", "unit"],
+)
+
+genrule(
+    name = "run_integration_tests",
+    srcs = [":test_srcs", "//php:srcs"],
+    outs = ["integration_test_results.txt"],
+    cmd = """
+        cd php && \
+        if [ -f "composer.json" ] && [ -d "vendor" ]; then \
+            vendor/bin/phpunit tests/Integration/ --verbose > $(location integration_test_results.txt) 2>&1 || \
+            (echo "Integration tests failed" > $(location integration_test_results.txt) && exit 1); \
+        else \
+            echo "PHPUnit not available or dependencies not installed" > $(location integration_test_results.txt); \
+        fi
+    """,
+    tags = ["php", "integration"],
+)
+
+# Aggregated test target for all PHP tests
+genrule(
+    name = "run_all_tests",
+    srcs = [":test_srcs", "//php:srcs"],
+    outs = ["all_test_results.txt"],
+    cmd = """
+        cd php && \
+        if [ -f "composer.json" ] && [ -d "vendor" ]; then \
+            vendor/bin/phpunit tests/ --verbose > $(location all_test_results.txt) 2>&1 || \
+            (echo "All PHP tests failed" > $(location all_test_results.txt) && exit 1); \
+        else \
+            echo "PHPUnit not available or dependencies not installed" > $(location all_test_results.txt); \
+        fi
+    """,
+    tags = ["php", "all"],
 )
 
