@@ -1,0 +1,27 @@
+# BUILD.bazel para SDK Python
+
+package(default_visibility = ["//visibility:public"])
+
+# Arquivos fonte do SDK Python
+filegroup(
+    name = "srcs",
+    srcs = glob(["src/**/*.py"]),
+)
+
+# Target agregado
+filegroup(
+    name = "all",
+    srcs = [
+        ":srcs",
+    ],
+)
+
+# Exemplo de py_library (descomente quando rules_python estiver configurado)
+# load("@rules_python//python:defs.bzl", "py_library")
+# py_library(
+#     name = "schubert_toolbox",
+#     srcs = glob(["src/**/*.py"]),
+#     imports = ["src"],
+#     deps = [],
+# )
+

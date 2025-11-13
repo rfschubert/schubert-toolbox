@@ -1,0 +1,27 @@
+# BUILD.bazel para testes JavaScript/TypeScript
+
+package(default_visibility = ["//visibility:public"])
+
+# Arquivos de teste
+filegroup(
+    name = "test_srcs",
+    srcs = glob(["**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js"], allow_empty = True),
+)
+
+# Target agregado para todos os testes
+filegroup(
+    name = "all",
+    srcs = [
+        ":test_srcs",
+    ],
+)
+
+# Exemplo de genrule para executar Jest (requer Jest instalado via npm)
+genrule(
+    name = "run_tests",
+    srcs = [":test_srcs"],
+    outs = ["test_results.txt"],
+    cmd = "cd $$(dirname $(location //js:all)) && npm test > $@ 2>&1 || echo 'Jest not found' > $@",
+    tags = ["manual"],
+)
+

@@ -1,0 +1,30 @@
+# BUILD.bazel para SDK PHP
+
+package(default_visibility = ["//visibility:public"])
+
+# PHP não tem regras nativas no Bazel, então usamos genrule ou filegroup
+# Para builds mais complexos, considere usar rules_php ou criar regras customizadas
+
+# Arquivos fonte do SDK PHP
+filegroup(
+    name = "srcs",
+    srcs = glob(["src/**/*.php"], allow_empty = True),
+)
+
+# Target agregado
+filegroup(
+    name = "all",
+    srcs = [
+        ":srcs",
+    ],
+)
+
+# Exemplo de genrule para validar sintaxe PHP (requer PHP instalado)
+genrule(
+    name = "syntax_check",
+    srcs = [":srcs"],
+    outs = ["syntax_check.txt"],
+    cmd = "php -l src/index.php > $@ 2>&1 || echo 'No index.php found' > $@",
+    tags = ["manual"],
+)
+

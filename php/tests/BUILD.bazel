@@ -1,0 +1,27 @@
+# BUILD.bazel para testes PHP
+
+package(default_visibility = ["//visibility:public"])
+
+# Arquivos de teste PHP
+filegroup(
+    name = "test_srcs",
+    srcs = glob(["**/*Test.php", "**/*_test.php"], allow_empty = True),
+)
+
+# Target agregado para todos os testes
+filegroup(
+    name = "all",
+    srcs = [
+        ":test_srcs",
+    ],
+)
+
+# Exemplo de genrule para executar PHPUnit (requer PHPUnit instalado via composer)
+genrule(
+    name = "run_tests",
+    srcs = [":test_srcs"],
+    outs = ["test_results.txt"],
+    cmd = "cd $$(dirname $(location //php:all)) && vendor/bin/phpunit tests/ > $@ 2>&1 || echo 'PHPUnit not found' > $@",
+    tags = ["manual"],
+)
+

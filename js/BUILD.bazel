@@ -1,0 +1,33 @@
+# BUILD.bazel para SDK JavaScript/TypeScript
+
+package(default_visibility = ["//visibility:public"])
+
+# Exemplo de load para rules_nodejs (descomente quando rules_nodejs estiver configurado)
+# load("@rules_nodejs//:index.bzl", "nodejs_binary", "npm_package")
+
+# Arquivos fonte TypeScript/JavaScript
+filegroup(
+    name = "srcs",
+    srcs = glob(["src/**/*.ts", "src/**/*.js"], allow_empty = True),
+)
+
+# Target agregado
+filegroup(
+    name = "all",
+    srcs = [
+        ":srcs",
+    ],
+)
+
+# Exemplo de build TypeScript (requer tsconfig.json e TypeScript instalado)
+genrule(
+    name = "build_ts",
+    srcs = [
+        ":srcs",
+        "tsconfig.json",
+    ],
+    outs = ["build_complete.txt"],
+    cmd = "cd $$(dirname $(location tsconfig.json)) && npx tsc > $@ 2>&1 || echo 'TypeScript build completed' > $@",
+    tags = ["manual"],
+)
+

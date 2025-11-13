@@ -1,0 +1,13 @@
+# MODULE.bazel - Configuração moderna do Bazel (Bzlmod)
+
+module(
+    name = "schubert_toolbox",
+    version = "0.1.0",
+)
+
+# Rules Python (descomente quando necessário)
+# bazel_dep(name = "rules_python", version = "0.26.0")
+
+# Rules Node.js (descomente quando necessário)
+# bazel_dep(name = "rules_nodejs", version = "5.8.4")
+# node_version = "20.15.0"  # Node.js LTS Iron (support until April 2026)

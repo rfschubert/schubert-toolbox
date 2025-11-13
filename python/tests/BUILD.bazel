@@ -1,0 +1,28 @@
+# BUILD.bazel para testes Python
+
+package(default_visibility = ["//visibility:public"])
+
+# Arquivos de teste Python
+filegroup(
+    name = "test_srcs",
+    srcs = glob(["**/*_test.py", "**/test_*.py"], allow_empty = True),
+)
+
+# Target agregado para todos os testes
+filegroup(
+    name = "all",
+    srcs = [
+        ":test_srcs",
+    ],
+)
+
+# Exemplo de py_test (descomente quando rules_python estiver configurado)
+# load("@rules_python//python:defs.bzl", "py_test")
+# py_test(
+#     name = "test_example",
+#     srcs = ["test_example.py"],
+#     deps = [
+#         "//python:schubert_toolbox",
+#     ],
+# )
+

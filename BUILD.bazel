@@ -1,0 +1,31 @@
+# Configuração Bazel principal para builds/tests multi-linguagem
+
+package(default_visibility = ["//visibility:public"])
+
+# Target básico para verificar se o Bazel está funcionando
+genrule(
+    name = "hello",
+    outs = ["hello.txt"],
+    cmd = "echo 'Bazel está funcionando corretamente!' > $@",
+)
+
+# Targets agregados para build de todos os SDKs
+filegroup(
+    name = "all_sdks",
+    srcs = [
+        "//python:all",
+        "//php:all",
+        "//js:all",
+    ],
+)
+
+# Targets agregados para testes de todos os SDKs
+filegroup(
+    name = "all_tests",
+    srcs = [
+        "//python/tests:all",
+        "//php/tests:all",
+        "//js/tests:all",
+    ],
+)
+
