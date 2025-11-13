@@ -1,0 +1,34 @@
+# GitHub Copilot Instructions
+
+## Primary Instructions
+
+Before starting any task, read the main instructions:
+- [Project Instructions](instructions.md)
+- [Default LLM Instructions](../../docs/llms/default_llms_instructions.md)
+
+## Communication Rules
+
+- Use English for all communication (issues, PRs, commits, comments)
+- Never use emojis
+- Keep communication professional
+
+## Code Quality
+
+- Follow DRY principles
+- Apply SOLID principles
+- Maintain framework agnosticism
+- Ensure API consistency across languages
+
+## Code Review
+
+When reviewing PRs:
+- Check for feature parity across Python, PHP, and JavaScript/TypeScript
+- If a feature is added to only one language, create an issue after PR approval
+- Use the feature parity issue template
+
+## Architecture
+
+- Drivers: Pure communication, no cache/circuit breaker
+- Managers: Orchestrate drivers, lightweight
+- SDK: Advanced features (caching, circuit breaker, rate limiter)
+

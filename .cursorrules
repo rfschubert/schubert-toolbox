@@ -1,0 +1,20 @@
+# Cursor Rules
+
+Before starting any task, read the main instructions file:
+
+**docs/llms/default_llms_instructions.md**
+
+## Key Principles
+
+- Follow SOLID principles and DRY methodology
+- Maintain consistency across all language implementations
+- Ensure framework agnosticism in all components
+- Maintain API consistency across languages
+- Follow the architecture: Drivers → Managers → SDK
+
+## Communication
+
+- Use English for all communication
+- Never use emojis
+- Keep communication professional
+
