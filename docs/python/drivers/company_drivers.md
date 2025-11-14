@@ -14,12 +14,20 @@ Company drivers are designed to:
 
 ## Available Drivers
 
+| Driver | API | Status | Performance | Características |
+|--------|-----|--------|-------------|----------------|
+| **BrasilAPI** | brasilapi.com.br | ✅ Ativo | ~0.06s | Rápido, confiável |
+| **OpenCNPJ** | api.opencnpj.org | ✅ Ativo | ~0.03s | Mais rápido, SSL customizado |
+| **CNPJA** | open.cnpja.com | ✅ Ativo | ~0.51s | Dados detalhados |
+| **CNPJ.ws** | cnpj.ws | ✅ Ativo | ~2.2s | Rate limiting |
+
 ### BrasilAPI Company Driver
 
-**Driver Name:** `brasilapi`  
-**Provider:** BrasilAPI (https://brasilapi.com.br/)  
-**Cost:** Free  
-**Rate Limits:** Moderate (community-friendly)  
+**Driver Name:** `brasilapi`
+**Provider:** BrasilAPI (https://brasilapi.com.br/)
+**Cost:** Free
+**Rate Limits:** Moderate (community-friendly)
+**Performance:** ~0.06s (rápido)
 **Data Source:** Official Brazilian government data
 
 #### Features
@@ -272,3 +280,114 @@ def enrich_company_data(cnpj: str) -> dict:
         "last_verified": company.last_updated
     }
 ```
+
+## Additional Drivers (Updated 2024.11)
+
+### OpenCNPJ Company Driver
+
+**Driver Name:** `opencnpj`
+**Provider:** OpenCNPJ (https://api.opencnpj.org/)
+**Cost:** Free
+**Performance:** ~0.03s (mais rápido)
+**SSL:** Configuração customizada (verify=False)
+**Status:** ✅ Ativo
+
+#### Features
+
+- **Performance máxima** - Driver mais rápido disponível
+- **SSL handling automático** - Contorna problemas de certificado
+- **Dados completos** com sócios e atividades
+- **Warning suppression** - Remove avisos de SSL
+- **Rate limiting moderado** - Permite consultas frequentes
+
+#### Usage
+
+```python
+from drivers.company.company_opencnpj_driver import CompanyOpencnpjDriver
+
+driver = CompanyOpencnpjDriver()
+company = driver.get("15.280.995/0001-69")
+print(f"Company: {company.get_display_name()}")
+```
+
+### CNPJA Company Driver
+
+**Driver Name:** `cnpja`
+**Provider:** CNPJA (https://open.cnpja.com/)
+**Cost:** Free
+**Performance:** ~0.51s (moderado)
+**Data Quality:** Muito detalhados
+**Status:** ✅ Ativo
+
+#### Features
+
+- **Dados muito detalhados** incluindo capital social
+- **API moderna** com estrutura JSON rica
+- **Informações de porte** e classificação da empresa
+- **Status Simples Nacional** e MEI
+- **Dados de sócios** com qualificação detalhada
+
+#### Usage
+
+```python
+from drivers.company.company_cnpja_driver import CompanyCnpjaDriver
+
+driver = CompanyCnpjaDriver()
+company = driver.get("15.280.995/0001-69")
+print(f"Capital: R$ {company.share_capital:,.2f}")
+```
+
+### CNPJ.ws Company Driver
+
+**Driver Name:** `cnpjws`
+**Provider:** CNPJ.ws (https://cnpj.ws/)
+**Cost:** Free
+**Performance:** ~2.2s (rate limiting)
+**Rate Limiting:** Agressivo
+**Status:** ✅ Ativo
+
+#### Features
+
+- **Rate limiting robusto** com backoff exponencial
+- **Dados completos** incluindo histórico da empresa
+- **Retry logic inteligente** com diferentes delays
+- **Error handling específico** para diferentes tipos de erro
+
+#### Usage
+
+```python
+from drivers.company.company_cnpjws_driver import CompanyCnpjwsDriver
+
+driver = CompanyCnpjwsDriver()
+company = driver.get("15.280.995/0001-69")
+print(f"Activities: {len(company.secondary_activities)}")
+```
+
+## Performance Comparison
+
+| Driver | Tempo Médio | Uso Recomendado |
+|--------|-------------|-----------------|
+| **OpenCNPJ** | ~0.03s | First-to-respond, consultas frequentes |
+| **BrasilAPI** | ~0.06s | Backup confiável, dados oficiais |
+| **CNPJA** | ~0.51s | Dados detalhados, análises |
+| **CNPJ.ws** | ~2.2s | Fallback, dados históricos |
+
+## CompanyManager Features
+
+### First-to-Respond Pattern
+
+```python
+from managers.company_manager import CompanyManager
+
+manager = CompanyManager()
+company = manager.get_first_response_sync("15.280.995/0001-69", timeout=5.0)
+print(f"Winner: {company.verification_source}")  # Usually "opencnpj"
+```
+
+### Error Handling
+
+- **SSL Errors**: Configuração automática (OpenCNPJ)
+- **Rate Limiting**: Backoff exponencial automático
+- **Network Errors**: Retry com delays progressivos
+- **API Errors**: Tratamento específico por código de erro
+- **Validation Errors**: Integração com FormatterManager
