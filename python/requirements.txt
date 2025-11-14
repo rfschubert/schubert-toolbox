@@ -1,0 +1,13 @@
+# Schubert Toolbox Python Requirements
+
+# Core dependencies
+requests>=2.31.0
+
+# Testing dependencies
+pytest>=7.4.0
+vcrpy>=4.3.1
+
+# Development dependencies (optional)
+pytest-cov>=4.1.0
+black>=23.0.0
+flake8>=6.0.0

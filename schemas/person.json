@@ -1,0 +1,367 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.schubert-toolbox.com/person.json",
+  "title": "Person Schema",
+  "description": "ISO 20022 compliant person schema for natural and legal persons",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the person"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Full name of the person"
+    },
+    "person_type": {
+      "type": "string",
+      "enum": ["natural", "legal"],
+      "description": "Type of person (natural or legal)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "suspended", "deceased", "dissolved"],
+      "default": "active",
+      "description": "Current status of the person"
+    },
+    "tax_id": {
+      "type": ["string", "null"],
+      "description": "Tax identification number"
+    },
+    "tax_country": {
+      "$ref": "#/definitions/Country"
+    },
+    "contacts": {
+      "$ref": "#/definitions/ContactInformation"
+    },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "$ref": "address.json"
+      }
+    },
+    "identification_documents": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IdentificationDocument"
+      }
+    },
+    "nationality": {
+      "$ref": "#/definitions/Country"
+    },
+    "country_of_residence": {
+      "$ref": "#/definitions/Country"
+    },
+    "registration_date": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Date when registered in the system"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": ["name", "person_type"],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "person_type": {
+            "const": "natural"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "first_name": {
+            "type": ["string", "null"]
+          },
+          "middle_name": {
+            "type": ["string", "null"]
+          },
+          "last_name": {
+            "type": ["string", "null"]
+          },
+          "birth_date": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "birth_place": {
+            "type": ["string", "null"]
+          },
+          "birth_country": {
+            "$ref": "#/definitions/Country"
+          },
+          "mother_name": {
+            "type": ["string", "null"]
+          },
+          "father_name": {
+            "type": ["string", "null"]
+          },
+          "occupation": {
+            "type": ["string", "null"]
+          },
+          "employer": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "person_type": {
+            "const": "legal"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "legal_name": {
+            "type": ["string", "null"]
+          },
+          "trade_name": {
+            "type": ["string", "null"]
+          },
+          "legal_form": {
+            "type": ["string", "null"]
+          },
+          "registration_number": {
+            "type": ["string", "null"]
+          },
+          "registration_country": {
+            "$ref": "#/definitions/Country"
+          },
+          "industry_code": {
+            "type": ["string", "null"]
+          },
+          "business_description": {
+            "type": ["string", "null"]
+          },
+          "website": {
+            "type": ["string", "null"],
+            "format": "uri"
+          },
+          "authorized_representatives": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "Country": {
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "type": ["string", "null"],
+          "pattern": "^[A-Z]{2}$",
+          "description": "ISO 3166-1 alpha-2 country code"
+        },
+        "alpha3": {
+          "type": ["string", "null"],
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 3166-1 alpha-3 country code"
+        },
+        "numeric": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]{3}$",
+          "description": "ISO 3166-1 numeric country code"
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Country name in English"
+        },
+        "local_name": {
+          "type": ["string", "null"],
+          "description": "Country name in local language"
+        }
+      }
+    },
+    "ContactInformation": {
+      "type": ["object", "null"],
+      "properties": {
+        "emails": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EmailContact"
+          }
+        },
+        "phones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PhoneContact"
+          }
+        },
+        "social_media": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SocialMediaContact"
+          }
+        }
+      }
+    },
+    "EmailContact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "contact_type": {
+          "type": "string",
+          "enum": ["personal", "business", "home", "work", "mobile", "fax", "emergency", "other"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "pending_verification", "verified", "invalid"]
+        },
+        "is_verified": {
+          "type": "boolean"
+        },
+        "is_primary": {
+          "type": "boolean"
+        },
+        "is_default": {
+          "type": "boolean"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["email"]
+    },
+    "PhoneContact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "country_code": {
+          "type": ["string", "null"]
+        },
+        "extension": {
+          "type": ["string", "null"]
+        },
+        "contact_type": {
+          "type": "string",
+          "enum": ["personal", "business", "home", "work", "mobile", "fax", "emergency", "other"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "pending_verification", "verified", "invalid"]
+        },
+        "is_verified": {
+          "type": "boolean"
+        },
+        "is_primary": {
+          "type": "boolean"
+        },
+        "is_default": {
+          "type": "boolean"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["phone"]
+    },
+    "SocialMediaContact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "url": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "contact_type": {
+          "type": "string",
+          "enum": ["personal", "business", "home", "work", "mobile", "fax", "emergency", "other"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "pending_verification", "verified", "invalid"]
+        },
+        "is_primary": {
+          "type": "boolean"
+        },
+        "is_default": {
+          "type": "boolean"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["platform", "username"]
+    },
+    "IdentificationDocument": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "document_type": {
+          "type": "string",
+          "enum": ["passport", "national_id", "drivers_license", "tax_id", "social_security", "birth_certificate", "other"]
+        },
+        "document_number": {
+          "type": "string"
+        },
+        "issuing_country": {
+          "$ref": "#/definitions/Country"
+        },
+        "issuing_authority": {
+          "type": ["string", "null"]
+        },
+        "issue_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "expiry_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "is_primary": {
+          "type": "boolean"
+        }
+      },
+      "required": ["document_type", "document_number"]
+    }
+  }
+}

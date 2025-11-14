@@ -1,0 +1,327 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.schubert-toolbox.com/financial.json",
+  "title": "Financial Schema",
+  "description": "Financial institution and account schemas with international standards support",
+  "definitions": {
+    "BIC": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$",
+          "description": "BIC code (8 or 11 characters)"
+        }
+      },
+      "required": ["code"]
+    },
+    "IBAN": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}[0-9]{2}[A-Z0-9]+$",
+          "description": "IBAN code"
+        }
+      },
+      "required": ["code"]
+    },
+    "LEI": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{20}$",
+          "description": "LEI code (20 characters)"
+        }
+      },
+      "required": ["code"]
+    },
+    "FinancialInstitution": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "description": "Institution name"
+        },
+        "short_name": {
+          "type": ["string", "null"]
+        },
+        "legal_name": {
+          "type": ["string", "null"]
+        },
+        "institution_type": {
+          "type": "string",
+          "enum": [
+            "commercial_bank", "investment_bank", "central_bank", "credit_union",
+            "savings_bank", "cooperative_bank", "development_bank", 
+            "payment_institution", "e_money_institution", "fintech", "other"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "suspended", "under_supervision", "liquidation", "merged"],
+          "default": "active"
+        },
+        "bic": {
+          "$ref": "#/definitions/BIC"
+        },
+        "lei": {
+          "$ref": "#/definitions/LEI"
+        },
+        "country_codes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "country": {
+          "$ref": "person.json#/definitions/Country"
+        },
+        "headquarters_country": {
+          "$ref": "person.json#/definitions/Country"
+        },
+        "regulatory_info": {
+          "$ref": "#/definitions/RegulatoryInformation"
+        },
+        "parent_institution": {
+          "type": ["string", "null"]
+        },
+        "subsidiaries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supported_currencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          }
+        },
+        "website": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "contact_info": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["name", "institution_type"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "country": {
+                "properties": {
+                  "code": {
+                    "const": "BR"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "compe_code": {
+                "type": ["string", "null"],
+                "pattern": "^[0-9]{3}$",
+                "description": "Brazilian COMPE code"
+              },
+              "ispb_code": {
+                "type": ["string", "null"],
+                "pattern": "^[0-9]{8}$",
+                "description": "Brazilian ISPB code"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "BankAccount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "account_number": {
+          "type": "string",
+          "description": "Account number"
+        },
+        "account_type": {
+          "type": "string",
+          "enum": ["checking", "savings", "current", "deposit", "loan", "credit_card", "investment", "escrow", "trust", "other"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "suspended", "closed", "frozen", "pending_opening"],
+          "default": "active"
+        },
+        "institution_id": {
+          "type": ["string", "null"],
+          "description": "Reference to financial institution"
+        },
+        "iban": {
+          "$ref": "#/definitions/IBAN"
+        },
+        "branch_code": {
+          "type": ["string", "null"]
+        },
+        "branch_name": {
+          "type": ["string", "null"]
+        },
+        "account_holder_id": {
+          "type": ["string", "null"],
+          "description": "Reference to person"
+        },
+        "account_holder_name": {
+          "type": ["string", "null"]
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "default": "USD"
+        },
+        "balance": {
+          "type": ["number", "null"]
+        },
+        "available_balance": {
+          "type": ["number", "null"]
+        },
+        "credit_limit": {
+          "type": ["number", "null"]
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "restrictions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "opening_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "closing_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "last_activity_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["account_number", "account_type"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "currency": {
+                "const": "BRL"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "agency": {
+                "type": ["string", "null"],
+                "pattern": "^[0-9]{3,5}$",
+                "description": "Brazilian agency code"
+              },
+              "account_digit": {
+                "type": ["string", "null"],
+                "description": "Brazilian account check digit"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "RegulatoryInformation": {
+      "type": ["object", "null"],
+      "properties": {
+        "primary_regulator": {
+          "type": ["string", "null"]
+        },
+        "regulatory_status": {
+          "type": ["string", "null"]
+        },
+        "license_number": {
+          "type": ["string", "null"]
+        },
+        "license_type": {
+          "type": ["string", "null"]
+        },
+        "license_country": {
+          "$ref": "person.json#/definitions/Country"
+        },
+        "regulatory_codes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "title": "Financial Institution",
+      "allOf": [
+        {
+          "$ref": "#/definitions/FinancialInstitution"
+        }
+      ]
+    },
+    {
+      "title": "Bank Account",
+      "allOf": [
+        {
+          "$ref": "#/definitions/BankAccount"
+        }
+      ]
+    }
+  ]
+}

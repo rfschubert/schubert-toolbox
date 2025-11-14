@@ -1,0 +1,346 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.schubert-toolbox.com/pix.json",
+  "title": "PIX Schema",
+  "description": "PIX payment system schema following ISO 20022 instant payment standards",
+  "definitions": {
+    "PIXKey": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "key": {
+          "type": "string",
+          "description": "PIX key value"
+        },
+        "key_type": {
+          "type": "string",
+          "enum": ["cpf", "cnpj", "email", "phone", "random"],
+          "description": "Type of PIX key"
+        },
+        "account_id": {
+          "type": ["string", "null"],
+          "description": "Reference to bank account"
+        },
+        "owner_id": {
+          "type": ["string", "null"],
+          "description": "Reference to person who owns the key"
+        },
+        "is_active": {
+          "type": "boolean",
+          "default": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["key", "key_type"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "key_type": {
+                "const": "cpf"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "key": {
+                "pattern": "^[0-9]{11}$",
+                "description": "CPF must be 11 digits"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "key_type": {
+                "const": "cnpj"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "key": {
+                "pattern": "^[0-9]{14}$",
+                "description": "CNPJ must be 14 digits"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "key_type": {
+                "const": "email"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "key": {
+                "format": "email",
+                "description": "Must be a valid email address"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "key_type": {
+                "const": "phone"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "key": {
+                "pattern": "^\\+55[0-9]{10,11}$",
+                "description": "Phone must be in format +55AAXXXXXXXXX"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "key_type": {
+                "const": "random"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "key": {
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                "description": "Random key must be in UUID format"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "PIXQRCode": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "emv_code": {
+          "type": "string",
+          "description": "EMV QR Code payload"
+        },
+        "merchant_name": {
+          "type": ["string", "null"],
+          "maxLength": 25
+        },
+        "merchant_city": {
+          "type": ["string", "null"],
+          "maxLength": 15
+        },
+        "amount": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "description": "Amount in cents"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "maxLength": 72
+        },
+        "is_static": {
+          "type": "boolean",
+          "default": true
+        },
+        "expires_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "qr_code_image": {
+          "type": ["string", "null"],
+          "description": "Base64 encoded QR code image"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["emv_code"]
+    },
+    "PIXParticipant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "account_id": {
+          "type": ["string", "null"],
+          "description": "Reference to bank account"
+        },
+        "person_id": {
+          "type": ["string", "null"],
+          "description": "Reference to person"
+        },
+        "pix_key": {
+          "$ref": "#/definitions/PIXKey"
+        }
+      },
+      "anyOf": [
+        {
+          "required": ["account_id"]
+        },
+        {
+          "required": ["person_id"]
+        }
+      ]
+    },
+    "PIXTransaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "transaction_id": {
+          "type": "string",
+          "description": "End-to-end transaction ID"
+        },
+        "payment_id": {
+          "type": ["string", "null"],
+          "description": "Payment ID for requests"
+        },
+        "transaction_type": {
+          "type": "string",
+          "enum": ["instant_payment", "payment_request", "withdrawal", "change", "refund"]
+        },
+        "initiation_type": {
+          "type": "string",
+          "enum": ["manual", "qr_static", "qr_dynamic", "payment_link", "api"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "processing", "completed", "failed", "cancelled", "expired", "refunded"],
+          "default": "pending"
+        },
+        "payer": {
+          "$ref": "#/definitions/PIXParticipant"
+        },
+        "receiver": {
+          "$ref": "#/definitions/PIXParticipant"
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Amount in cents"
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["BRL"],
+          "default": "BRL"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "maxLength": 140
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "maxLength": 35
+        },
+        "qr_code": {
+          "$ref": "#/definitions/PIXQRCode"
+        },
+        "requested_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "processed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "additional_info": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "raw_response": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["transaction_id", "transaction_type", "initiation_type", "payer", "receiver", "amount"]
+    }
+  },
+  "oneOf": [
+    {
+      "title": "PIX Key",
+      "allOf": [
+        {
+          "$ref": "#/definitions/PIXKey"
+        }
+      ]
+    },
+    {
+      "title": "PIX QR Code",
+      "allOf": [
+        {
+          "$ref": "#/definitions/PIXQRCode"
+        }
+      ]
+    },
+    {
+      "title": "PIX Transaction",
+      "allOf": [
+        {
+          "$ref": "#/definitions/PIXTransaction"
+        }
+      ]
+    }
+  ]
+}

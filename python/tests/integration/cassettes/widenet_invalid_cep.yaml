@@ -1,0 +1,28 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: https://cdn.apicep.com/file/apicep/00000-000.json
+  response:
+    body:
+      string: '{"ok":false,"status":400,"message":"CEP NAO ENCONTRADO"}'
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 14 Nov 2024 04:30:00 GMT
+      Server:
+      - nginx/1.18.0
+    status:
+      code: 400
+      message: Bad Request
+version: 1
