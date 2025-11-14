@@ -7,21 +7,22 @@ schemas/address.json schema definition.
 
 from .address import (
     Address,
+    AddressComponent,
+    AddressStatus,
+    AddressType,
     Country,
     GeographicCoordinates,
-    AddressComponent,
-    AddressType,
-    AddressStatus
 )
+
 
 __version__ = "1.0.0"
 __author__ = "Schubert Toolbox Team"
 
 __all__ = [
     "Address",
+    "AddressComponent",
+    "AddressStatus",
+    "AddressType",
     "Country",
     "GeographicCoordinates",
-    "AddressComponent",
-    "AddressType",
-    "AddressStatus"
 ]

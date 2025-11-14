@@ -6,16 +6,16 @@ following the Manager Pattern documented in docs/patterns/manager_pattern_detail
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from contracts.manager_contract import (
     AbstractManagerContract,
-    ManagerContract,
+    DriverLoadError,
     DriverNotFoundError,
-    DriverLoadError
 )
 from standards.address import Address
-from utils.logging_security import sanitize_cache_key, sanitize_user_input, sanitize_error_message
+from utils.logging_security import sanitize_cache_key, sanitize_error_message, sanitize_user_input
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,29 +23,29 @@ logger = logging.getLogger(__name__)
 class PostalCodeManager(AbstractManagerContract):
     """
     Manager for postal code lookup drivers.
-    
+
     Provides unified interface for loading and using postal code drivers
     that return Address objects. All drivers must implement the same interface:
     - get(postal_code: str) -> Address
     - configure(**kwargs) -> Self
     - get_config() -> Dict[str, Any]
-    
+
     Example usage:
         # Manager-orchestrated usage
         manager = PostalCodeManager()
         driver = manager.load("viacep")
         address = driver.get("01310-100")
-        
+
         # Direct manager method
         address = manager.get("01310-100", driver="viacep")
     """
-    
+
     def __init__(self):
         """Initialize PostalCodeManager with empty driver registry."""
         super().__init__()
-        self._drivers: Dict[str, Dict[str, Any]] = {}
-        self._default_driver: Optional[str] = None
-        self._cache: Dict[str, Any] = {}
+        self._drivers: dict[str, dict[str, Any]] = {}
+        self._default_driver: str | None = None
+        self._cache: dict[str, Any] = {}
         self._cache_enabled: bool = False
 
         # Register default drivers
@@ -58,12 +58,13 @@ class PostalCodeManager(AbstractManagerContract):
         # Register ViaCEP driver
         try:
             from drivers.postalcode.postalcode_viacep_driver import PostalCodeViacepDriver
+
             self.register_driver(
                 "viacep",
                 PostalCodeViacepDriver,
                 description="ViaCEP Brazilian postal code service",
                 version="1.0.0",
-                country="BR"
+                country="BR",
             )
             logger.debug("Registered ViaCEP driver")
         except ImportError as e:
@@ -72,12 +73,13 @@ class PostalCodeManager(AbstractManagerContract):
         # Register WideNet driver
         try:
             from drivers.postalcode.postalcode_widenet_driver import PostalCodeWidenetDriver
+
             self.register_driver(
                 "widenet",
                 PostalCodeWidenetDriver,
                 description="WideNet Brazilian postal code service",
                 version="1.0.0",
-                country="BR"
+                country="BR",
             )
             logger.debug("Registered WideNet driver")
         except ImportError as e:
@@ -86,12 +88,13 @@ class PostalCodeManager(AbstractManagerContract):
         # Register BrasilAPI driver
         try:
             from drivers.postalcode.postalcode_brasilapi_driver import PostalCodeBrasilApiDriver
+
             self.register_driver(
                 "brasilapi",
                 PostalCodeBrasilApiDriver,
                 description="BrasilAPI Brazilian postal code service",
                 version="1.0.0",
-                country="BR"
+                country="BR",
             )
             logger.debug("Registered BrasilAPI driver")
         except ImportError as e:
@@ -136,14 +139,14 @@ class PostalCodeManager(AbstractManagerContract):
     def get(self, postal_code: str, driver: str = "default") -> Address:
         """
         Get address for postal code using specified driver.
-        
+
         Args:
             postal_code: Postal code to lookup
             driver: Driver name to use (defaults to default driver)
-            
+
         Returns:
             Address object with postal code information
-            
+
         Raises:
             DriverNotFoundError: If driver is not available
             PostalCodeError: If postal code lookup fails
@@ -156,7 +159,7 @@ class PostalCodeManager(AbstractManagerContract):
                 driver = available[0]  # Use first available driver
             else:
                 driver = self._default_driver
-        
+
         # Check cache first
         cache_key = f"{driver}:{postal_code}"
         if self._cache_enabled and cache_key in self._cache:
@@ -164,54 +167,55 @@ class PostalCodeManager(AbstractManagerContract):
             safe_cache_key = sanitize_cache_key(cache_key)
             logger.debug("Returning cached result for %s", safe_cache_key)
             return self._cache[cache_key]
-        
+
         # Load driver and get address
         driver_instance = self.load(driver)
         address = driver_instance.get(postal_code)
-        
+
         # Cache result
         if self._cache_enabled:
             self._cache[cache_key] = address
             # Security: Sanitize cache key to prevent log injection
             safe_cache_key = sanitize_cache_key(cache_key)
             logger.debug("Cached result for %s", safe_cache_key)
-        
+
         return address
-    
+
     def get_or_raise(self, postal_code: str, driver: str = "default") -> Address:
         """
         Get address or raise exception on failure.
-        
+
         Args:
             postal_code: Postal code to lookup
             driver: Driver name to use
-            
+
         Returns:
             Address object
-            
+
         Raises:
             PostalCodeError: If postal code is invalid or lookup fails
         """
         address = self.get(postal_code, driver)
-        
+
         # Validate address completeness
         if not address.is_complete():
             from validation_base import ValidationError
+
             raise ValidationError(
                 f"Incomplete address returned for postal code: {postal_code}",
-                error_code="POSTAL_CODE_INCOMPLETE_ADDRESS"
+                error_code="POSTAL_CODE_INCOMPLETE_ADDRESS",
             )
-        
+
         return address
-    
-    def bulk_get(self, postal_codes: List[str], driver: str = "default") -> List[Address]:
+
+    def bulk_get(self, postal_codes: list[str], driver: str = "default") -> list[Address]:
         """
         Get addresses for multiple postal codes.
-        
+
         Args:
             postal_codes: List of postal codes to lookup
             driver: Driver name to use
-            
+
         Returns:
             List of Address objects
         """
@@ -226,41 +230,38 @@ class PostalCodeManager(AbstractManagerContract):
                 safe_error = sanitize_error_message(e)
                 logger.warning("Failed to get address for %s: %s", safe_postal_code, safe_error)
                 # Create empty address with error info
-                error_address = Address(
-                    postal_code=postal_code,
-                    formatted_address=f"Error: {str(e)}"
-                )
+                error_address = Address(postal_code=postal_code, formatted_address=f"Error: {e!s}")
                 addresses.append(error_address)
-        
+
         return addresses
-    
+
     def set_default_driver(self, driver_name: str) -> None:
         """
         Set default driver for postal code lookups.
-        
+
         Args:
             driver_name: Name of driver to set as default
-            
+
         Raises:
             DriverNotFoundError: If driver is not available
         """
         if not self.has_driver(driver_name):
             raise DriverNotFoundError(driver_name, self.list_drivers())
-        
+
         self._default_driver = driver_name
         logger.info("Default driver set to: %s", driver_name)
-    
-    def get_default_driver(self) -> Optional[str]:
+
+    def get_default_driver(self) -> str | None:
         """Get current default driver name."""
         return self._default_driver
-    
-    def enable_cache(self, enabled: bool = True) -> 'PostalCodeManager':
+
+    def enable_cache(self, enabled: bool = True) -> "PostalCodeManager":
         """
         Enable or disable result caching.
-        
+
         Args:
             enabled: Whether to enable caching
-            
+
         Returns:
             Self for method chaining
         """
@@ -270,29 +271,29 @@ class PostalCodeManager(AbstractManagerContract):
             logger.debug("Cache disabled and cleared")
         else:
             logger.debug("Cache enabled")
-        
+
         return self
-    
-    def clear_cache(self) -> 'PostalCodeManager':
+
+    def clear_cache(self) -> "PostalCodeManager":
         """
         Clear cached results.
-        
+
         Returns:
             Self for method chaining
         """
         self._cache.clear()
         logger.debug("Cache cleared")
         return self
-    
-    def get_cache_stats(self) -> Dict[str, Any]:
+
+    def get_cache_stats(self) -> dict[str, Any]:
         """
         Get cache statistics.
-        
+
         Returns:
             Dictionary with cache statistics
         """
         return {
-            'enabled': self._cache_enabled,
-            'size': len(self._cache),
-            'keys': list(self._cache.keys())
+            "enabled": self._cache_enabled,
+            "size": len(self._cache),
+            "keys": list(self._cache.keys()),
         }

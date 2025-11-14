@@ -29,9 +29,9 @@ dependencies = [
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "flake8>=6.0.0",
+    "ruff>=0.1.0",
     "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
 ]
 
 [project.urls]
@@ -62,3 +62,69 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 
+# Ruff configuration (replaces black, flake8, isort, and more)
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+# Exclude specific directories
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+# Enable specific rule sets (start with basics)
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes (unused imports, etc.)
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (modernize Python code)
+    "B",    # flake8-bugbear (common bugs)
+    "C4",   # flake8-comprehensions
+    "PIE",  # flake8-pie (unnecessary code)
+    "SIM",  # flake8-simplify
+    "RUF",  # Ruff-specific rules
+]
+
+# Ignore specific rules that might be too strict for this project
+ignore = [
+    "E501",   # Line too long (handled by formatter)
+]
+
+# Allow unused variables when they start with an underscore
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can use magic values, assertions, etc.
+"tests/**/*.py" = [
+    "S101",   # asserts allowed in tests
+]
+
+# __init__.py files can have unused imports (they're often re-exports)
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["schubert_toolbox"]
+force-single-line = false
+lines-after-imports = 2

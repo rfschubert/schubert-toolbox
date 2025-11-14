@@ -2,6 +2,9 @@
 
 package(default_visibility = ["//visibility:public"])
 
+# Export configuration files
+exports_files(["pyproject.toml"])
+
 # Arquivos fonte do SDK Python
 filegroup(
     name = "srcs",

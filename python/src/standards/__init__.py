@@ -10,13 +10,13 @@ JSON schemas located in the /schemas directory.
 Usage:
     from standards import NaturalPerson, Address, PIXTransaction
     from standards.core import ValidationError
-    
+
     person = NaturalPerson(
         name="João Silva",
         tax_id="12345678901",
         birth_date="1990-01-01"
     )
-    
+
     person.add_email("joao@example.com", is_primary=True)
     person.add_address(Address(
         street_name="Rua das Flores, 123",
@@ -33,15 +33,14 @@ Key Features:
 - Extensible architecture
 """
 
-from .core.base import BaseModel, ValidationError, Country
-
 # Person models
 # from .person.person import Person, NaturalPerson, LegalPerson, PersonType  # Temporarily disabled
 # from .person.contact import ContactInformation, EmailContact, PhoneContact, ContactType  # Temporarily disabled
 # from .person.background import BackgroundCheck, PEPStatus, ComplianceStatus  # Temporarily disabled
-
 # Address models
 from .address.address import Address, AddressType, GeographicCoordinates
+from .core.base import BaseModel, Country, ValidationError
+
 
 # Financial models
 # from .financial.institution import FinancialInstitution, BrazilianBank, InstitutionType  # Temporarily disabled
@@ -59,7 +58,6 @@ __all__ = [
     "BaseModel",
     "ValidationError",
     "Country",
-    
     # Person
     # "Person",
     # "NaturalPerson",
@@ -72,12 +70,10 @@ __all__ = [
     # "BackgroundCheck",
     # "PEPStatus",
     # "ComplianceStatus",
-    
     # Address
     "Address",
     "AddressType",
     "GeographicCoordinates",
-    
     # Financial
     # "FinancialInstitution",
     # "BrazilianBank",
@@ -88,7 +84,6 @@ __all__ = [
     # "BIC",
     # "IBAN",
     # "LEI",
-
     # Payment
     # "PIXKey",
     # "PIXTransaction",
@@ -101,40 +96,40 @@ __all__ = [
 def validate_against_schema(data: dict, schema_name: str) -> tuple[bool, list]:
     """
     Validate data against a JSON schema.
-    
+
     Args:
         data: Data to validate
         schema_name: Name of schema ('person', 'address', 'financial', 'pix')
-        
+
     Returns:
         Tuple of (is_valid, errors)
     """
     import json
     import os
     from pathlib import Path
-    
+
     try:
         import jsonschema
     except ImportError:
         return False, [{"message": "jsonschema library not installed"}]
-    
+
     # Get schema file path
     schema_path = Path(__file__).parent.parent.parent.parent / "schemas" / f"{schema_name}.json"
-    
+
     if not schema_path.exists():
         return False, [{"message": f"Schema file not found: {schema_name}.json"}]
-    
+
     try:
         with open(schema_path) as f:
             schema = json.load(f)
-        
+
         jsonschema.validate(data, schema)
         return True, []
-        
+
     except jsonschema.ValidationError as e:
         return False, [{"message": str(e), "path": list(e.path)}]
     except Exception as e:
-        return False, [{"message": f"Validation error: {str(e)}"}]
+        return False, [{"message": f"Validation error: {e!s}"}]
 
 
 def get_schema_info() -> dict:
@@ -145,30 +140,30 @@ def get_schema_info() -> dict:
             "person": {
                 "file": "person.json",
                 "models": ["Person", "NaturalPerson", "LegalPerson"],
-                "description": "Person schemas following ISO 20022"
+                "description": "Person schemas following ISO 20022",
             },
             "address": {
-                "file": "address.json", 
+                "file": "address.json",
                 "models": ["Address"],
-                "description": "Address schemas following ISO 19160"
+                "description": "Address schemas following ISO 19160",
             },
             "financial": {
                 "file": "financial.json",
                 "models": ["FinancialInstitution", "BankAccount", "BIC", "IBAN", "LEI"],
-                "description": "Financial schemas with international standards"
+                "description": "Financial schemas with international standards",
             },
             "pix": {
                 "file": "pix.json",
                 "models": ["PIXKey", "PIXTransaction", "PIXQRCode"],
-                "description": "PIX payment system schemas"
-            }
+                "description": "PIX payment system schemas",
+            },
         },
         "features": [
             "JSON Schema validation",
-            "Type hints throughout", 
+            "Type hints throughout",
             "ORM-ready structure",
             "Multiple contact support",
             "International standards compliance",
-            "Country-specific validation"
-        ]
+            "Country-specific validation",
+        ],
     }

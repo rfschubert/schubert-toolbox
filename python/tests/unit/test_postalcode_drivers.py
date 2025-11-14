@@ -17,7 +17,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from managers.postalcode_manager import PostalCodeManager
 from standards.address import Address, Country
-from validation_base import ValidationError
+# Import ValidationError from one of the drivers (they all have the same local class)
+from drivers.postalcode.postalcode_viacep_driver import ValidationError
 
 
 class TestPostalCodeDrivers(unittest.TestCase):

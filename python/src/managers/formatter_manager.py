@@ -6,15 +6,15 @@ following the Manager Pattern documented in docs/patterns/manager_pattern_detail
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from contracts.manager_contract import (
     AbstractManagerContract,
-    ManagerContract,
+    DriverLoadError,
     DriverNotFoundError,
-    DriverLoadError
 )
-from utils.logging_security import sanitize_cache_key, sanitize_user_input, sanitize_error_message
+from utils.logging_security import sanitize_cache_key
+
 
 logger = logging.getLogger(__name__)
 
@@ -22,99 +22,102 @@ logger = logging.getLogger(__name__)
 class FormatterManager(AbstractManagerContract):
     """
     Manager for formatter drivers.
-    
+
     Provides unified interface for loading and using formatter drivers
     that format data values. All drivers must implement the same interface:
     - format(value: Union[str, int, Any]) -> str
     - configure(**kwargs) -> Self
     - get_config() -> Dict[str, Any]
-    
+
     Example usage:
         # Manager-orchestrated usage
         manager = FormatterManager()
         driver = manager.load("brazilian_postalcode")
         formatted = driver.format("88304053")
-        
+
         # Direct manager method
         formatted = manager.format("88304053", driver="brazilian_postalcode")
     """
-    
+
     def __init__(self):
         """Initialize FormatterManager with empty driver registry."""
         super().__init__()
-        self._drivers: Dict[str, Dict[str, Any]] = {}
-        self._default_driver: Optional[str] = None
-        self._cache: Dict[str, Any] = {}
+        self._drivers: dict[str, dict[str, Any]] = {}
+        self._default_driver: str | None = None
+        self._cache: dict[str, Any] = {}
         self._cache_enabled: bool = False
-        
+
         # Register default drivers
         self._register_default_drivers()
-        
+
         logger.debug("FormatterManager initialized")
-    
+
     def _register_default_drivers(self) -> None:
         """Register default formatter drivers."""
         # Register Brazilian Postal Code formatter
         try:
-            from drivers.formatter.formatter_brazilian_postalcode_driver import FormatterBrazilianPostalcodeDriver
+            from drivers.formatter.formatter_brazilian_postalcode_driver import (
+                FormatterBrazilianPostalcodeDriver,
+            )
+
             self.register_driver(
                 "brazilian_postalcode",
                 FormatterBrazilianPostalcodeDriver,
                 description="Brazilian postal code formatter (CEP)",
                 version="1.0.0",
-                country="BR"
+                country="BR",
             )
             logger.debug("Registered Brazilian Postal Code formatter")
         except ImportError as e:
             logger.warning("Failed to register Brazilian Postal Code formatter: %s", e)
-    
+
     def load(self, driver_name: str, **config) -> Any:
         """
         Load and configure a formatter driver.
-        
+
         Args:
             driver_name: Name of the driver to load
             **config: Configuration options for the driver
-            
+
         Returns:
             Configured driver instance that implements formatter interface
-            
+
         Raises:
             DriverNotFoundError: If driver is not available
             DriverLoadError: If driver fails to load
         """
         if not self.has_driver(driver_name):
             raise DriverNotFoundError(driver_name, self.list_drivers())
-        
+
         try:
             driver_info = self._drivers[driver_name]
             driver_class = driver_info["class"]
-            
+
             # Instantiate driver
             driver_instance = driver_class()
-            
+
             # Apply configuration if provided
             if config:
                 driver_instance.configure(**config)
-            
+
             logger.debug("Loaded formatter driver: %s", driver_name)
             return driver_instance
-            
+
         except Exception as e:
             logger.error("Failed to load driver %s: %s", driver_name, e)
             raise DriverLoadError(driver_name, str(e))
-    
-    def format(self, value: Union[str, int, Any], driver: str = "default") -> str:
+
+    def format(self, value: str | int | Any, driver: str = "default") -> str:
         """
         Format value using specified driver.
-        
+
         Args:
             value: Value to format
             driver: Driver name to use (defaults to default driver)
-            
+
         Returns:
             Formatted string value
-            
+
         Raises:
             DriverNotFoundError: If driver is not available
             ValidationError: If value cannot be formatted
@@ -127,29 +130,29 @@ class FormatterManager(AbstractManagerContract):
                 driver = available[0]  # Use first available driver
             else:
                 driver = self._default_driver
-        
+
         # Check cache first
-        cache_key = f"{driver}:{str(value)}"
+        cache_key = f"{driver}:{value!s}"
         if self._cache_enabled and cache_key in self._cache:
             # Security: Sanitize cache key to prevent log injection
             safe_cache_key = sanitize_cache_key(cache_key)
             logger.debug("Returning cached result for %s", safe_cache_key)
             return self._cache[cache_key]
-        
+
         # Load driver and format value
         driver_instance = self.load(driver)
         formatted_value = driver_instance.format(value)
-        
+
         # Cache result
         if self._cache_enabled:
             self._cache[cache_key] = formatted_value
             # Security: Sanitize cache key to prevent log injection
             safe_cache_key = sanitize_cache_key(cache_key)
             logger.debug("Cached result for %s", safe_cache_key)
-        
+
         return formatted_value
 
-    def bulk_format(self, values: List[Union[str, int, Any]], driver: str = "default") -> List[str]:
+    def bulk_format(self, values: list[str | int | Any], driver: str = "default") -> list[str]:
         """
         Format multiple values using specified driver.
 
@@ -188,11 +191,11 @@ class FormatterManager(AbstractManagerContract):
         self._default_driver = driver_name
         logger.info("Default formatter driver set to: %s", driver_name)
 
-    def get_default_driver(self) -> Optional[str]:
+    def get_default_driver(self) -> str | None:
         """Get current default driver name."""
         return self._default_driver
 
-    def enable_cache(self, enabled: bool = True) -> 'FormatterManager':
+    def enable_cache(self, enabled: bool = True) -> "FormatterManager":
         """
         Enable or disable result caching.
 
@@ -211,7 +214,7 @@ class FormatterManager(AbstractManagerContract):
 
         return self
 
-    def clear_cache(self) -> 'FormatterManager':
+    def clear_cache(self) -> "FormatterManager":
         """
         Clear cached results.
 
@@ -222,7 +225,7 @@ class FormatterManager(AbstractManagerContract):
         logger.debug("Formatter cache cleared")
         return self
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """
         Get cache statistics.
 
@@ -230,12 +233,12 @@ class FormatterManager(AbstractManagerContract):
             Dictionary with cache statistics
         """
         return {
-            'enabled': self._cache_enabled,
-            'size': len(self._cache),
-            'keys': list(self._cache.keys())
+            "enabled": self._cache_enabled,
+            "size": len(self._cache),
+            "keys": list(self._cache.keys()),
         }
 
-    def is_valid_format(self, value: Union[str, int, Any], driver: str = "default") -> bool:
+    def is_valid_format(self, value: str | int | Any, driver: str = "default") -> bool:
         """
         Check if value can be formatted by specified driver.
 
@@ -248,7 +251,7 @@ class FormatterManager(AbstractManagerContract):
         """
         try:
             driver_instance = self.load(driver)
-            if hasattr(driver_instance, 'is_valid_format'):
+            if hasattr(driver_instance, "is_valid_format"):
                 return driver_instance.is_valid_format(value)
             else:
                 # Try to format and see if it succeeds
