@@ -6,6 +6,36 @@ This directory contains comprehensive documentation for the Python implementatio
 
 The Python implementation provides a complete, production-ready version of the Schubert Toolbox with all core features implemented and tested. It serves as the reference implementation for other language ports.
 
+## Key Features
+
+- **Driver Pattern**: Modular, extensible architecture
+- **Manager Pattern**: Centralized driver management and configuration
+- **First-to-Respond**: Concurrent driver execution for maximum performance (4-5x faster)
+- **Standards Compliance**: Consistent data structures and interfaces
+- **Type Safety**: Full type hints and validation
+- **Error Handling**: Comprehensive error management
+- **Async Support**: Both synchronous and asynchronous APIs
+- **Logging**: Detailed logging for debugging and monitoring
+
+## Quick Start
+
+```python
+from managers.postalcode_manager import PostalCodeManager
+from managers.company_manager import CompanyManager
+
+# High-performance first-to-respond pattern for addresses
+postal_manager = PostalCodeManager()
+address = postal_manager.get_first_response_sync("88304-053")
+print(f"Fastest driver: {address.verification_source}")
+print(f"Address: {address.get_display_name()}")
+
+# High-performance company lookups
+company_manager = CompanyManager()
+company = company_manager.get_first_response_sync("11.222.333/0001-81")
+print(f"Company: {company.get_display_name()}")
+print(f"Status: {company.status}")
+```
+
 ## Documentation Structure
 
 ### [Contracts](contracts/)
@@ -20,12 +50,14 @@ Interface specifications and contracts that ensure consistency across all compon
 Orchestrator classes that provide unified interfaces for driver management.
 
 - **[Implemented Managers](managers/implemented_managers.md)** - FormatterManager & PostalCodeManager
+- **[CompanyManager](managers/company_manager.md)** - Brazilian company (CNPJ) data lookup manager
 
 ### [Drivers](drivers/)
 Core implementation components that perform specific tasks.
 
 - **[Formatter Drivers](drivers/formatter_drivers.md)** - Data formatting drivers
 - **[Postal Code Drivers](drivers/postal_code_drivers.md)** - Address lookup drivers
+- **[Company Drivers](drivers/company_drivers.md)** - Brazilian company (CNPJ) data drivers
 
 ### Development Tools
 Documentation for development and code quality tools.
@@ -46,7 +78,7 @@ pip install -r requirements.txt
 ### Basic Usage
 
 ```python
-from managers import FormatterManager, PostalCodeManager
+from managers import FormatterManager, PostalCodeManager, CompanyManager
 
 # Format postal code
 formatter = FormatterManager()
@@ -57,6 +89,12 @@ print(formatted)  # "88304-053"
 postal = PostalCodeManager()
 address = postal.get(formatted, driver="viacep")
 print(address.get_display_name())
+
+# Lookup company data
+company_manager = CompanyManager()
+company = company_manager.get_first_response_sync("11.222.333/0001-81")
+print(f"Company: {company.get_display_name()}")
+print(f"Status: {company.status}")
 ```
 
 ### Direct Driver Usage
@@ -83,9 +121,9 @@ address = driver.get("88304-053")
 
 | Component | Status | Drivers/Features |
 |-----------|--------|------------------|
-| **FormatterManager** | Complete | Brazilian Postal Code |
+| **FormatterManager** | Complete | Brazilian Postal Code, Brazilian CNPJ |
 | **PostalCodeManager** | Complete | ViaCEP, WideNet, BrasilAPI |
-
+| **CompanyManager** | Complete | BrasilAPI, CNPJA, OpenCNPJ, CNPJ.ws |
 | **Contracts System** | Complete | Manager, Formatter, Validator |
 | **DRY Integration** | Complete | Cross-manager integration |
 | **Testing Suite** | Complete | Unit tests, integration tests |
@@ -94,11 +132,18 @@ address = driver.get("88304-053")
 
 #### Formatter Drivers
 - **FormatterBrazilianPostalcodeDriver**: Brazilian postal code formatting (XXXXX-XXX)
+- **FormatterBrazilianCnpjDriver**: Brazilian CNPJ formatting (XX.XXX.XXX/XXXX-XX)
 
 #### Postal Code Drivers
 - **PostalCodeViacepDriver**: ViaCEP service integration (viacep.com.br)
 - **PostalCodeWidenetDriver**: WideNet API integration (cdn.apicep.com)
 - **PostalCodeBrasilApiDriver**: BrasilAPI service integration (brasilapi.com.br)
+
+#### Company Drivers
+- **CompanyBrasilApiDriver**: BrasilAPI company data service (fast, reliable)
+- **CompanyCnpjaDriver**: CNPJA.com company data service (rate limited)
+- **CompanyOpencnpjDriver**: OpenCNPJ.org company data service (community-driven)
+- **CompanyCnpjwsDriver**: CNPJ.ws company data service (comprehensive data)
 
 
 

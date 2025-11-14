@@ -13,6 +13,7 @@ Detailed documentation of data formatting drivers.
 
 **Currently Available:**
 - **Brazilian Postal Code Formatter**: Formats CEP to XXXXX-XXX standard
+- **Brazilian CNPJ Formatter**: Formats CNPJ to XX.XXX.XXX/XXXX-XX standard
 
 ### [Postal Code Drivers](postal_code_drivers.md)
 Detailed documentation of postal code lookup drivers.
@@ -21,6 +22,15 @@ Detailed documentation of postal code lookup drivers.
 - **ViaCEP Driver**: Brazilian postal code service (viacep.com.br)
 - **WideNet Driver**: WideNet postal code API (cdn.apicep.com)
 - **BrasilAPI Driver**: BrasilAPI postal code service (brasilapi.com.br)
+
+### [Company Drivers](company_drivers.md)
+Detailed documentation of Brazilian company (CNPJ) lookup drivers.
+
+**Currently Available:**
+- **BrasilAPI Driver**: BrasilAPI company data service (fast, reliable)
+- **CNPJA Driver**: CNPJA.com company data service (rate limited)
+- **OpenCNPJ Driver**: OpenCNPJ.org company data service (community-driven)
+- **CNPJ.ws Driver**: CNPJ.ws company data service (comprehensive data)
 
 ## Usage Patterns
 
@@ -141,6 +151,44 @@ address = postal_driver.get(formatted_code)
 print(f"Formatted: {formatted_code}")
 print(f"Address: {address.get_display_name()}")
 ```
+
+### First-to-Respond Pattern (High Performance)
+
+For maximum speed and reliability, use the first-to-respond pattern:
+
+```python
+from managers.postalcode_manager import PostalCodeManager
+
+manager = PostalCodeManager()
+
+# Get address from fastest responding driver
+address = manager.get_first_response_sync("88304-053")
+print(f"Fastest driver: {address.verification_source}")
+print(f"Address: {address.get_display_name()}")
+
+# With specific drivers and timeout
+address = manager.get_first_response_sync(
+    "88304-053",
+    drivers=["viacep", "brasilapi"],
+    timeout=5.0
+)
+
+# Async version for high-performance applications
+import asyncio
+address = asyncio.run(manager.get_first_response("88304-053"))
+```
+
+**Performance Benefits:**
+- **4-5x faster** than sequential driver calls
+- **Automatic fallback** if one driver fails
+- **Concurrent execution** of multiple drivers
+- **First successful response** wins and cancels others
+
+**Use Cases:**
+- High-performance applications
+- Real-time address validation
+- Batch processing with speed requirements
+- Applications requiring maximum reliability
 
 ## Architecture Benefits
 

@@ -189,3 +189,26 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+## TODO
+Here are some recent integratiosn I've worked on, that I plan to migrate to this package:
+
+- [ ] Implement cache Manager and Drivers (Redis)
+- [ ] Implement bank list local and from BrasilAPI
+- [ ] Implement national holidays
+- [ ] Implement currency pair value
+- [ ] Implement crypto deposit
+- [ ] Implement PIX Sicoob
+- [ ] Implement MercadoPago payment link
+- [ ] Implement Stripe payment link
+- [ ] Implement Stripe connect
+- [ ] Implement Geolocation from address
+- [ ] Implement IP locator
+- [ ] Implement user agent tracking
+- [ ] Implement Boleto Sicoob
+- [ ] Implement CNAB parser
+- [ ] Implement Image compressing to WebP
+- [ ] Implement Upload to R2
+- [ ] Implement Credit Card Tokenization
+- [ ] Implement Valt credentials integration
+- [ ] Implement NFe issuing 

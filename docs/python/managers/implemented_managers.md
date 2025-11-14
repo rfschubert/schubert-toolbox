@@ -12,8 +12,9 @@ All managers implement the [ManagerContract](../contracts/manager_contract.md) a
 
 1. [FormatterManager](#formattermanager)
 2. [PostalCodeManager](#postalcodemanager)
-3. [Usage Patterns](#usage-patterns)
-4. [Integration Examples](#integration-examples)
+3. [CompanyManager](#companymanager)
+4. [Usage Patterns](#usage-patterns)
+5. [Integration Examples](#integration-examples)
 
 ## FormatterManager
 
@@ -33,6 +34,7 @@ Manages formatters that transform input data into standardized output formats (p
 | Driver Name | Description | Input Types | Output Format |
 |-------------|-------------|-------------|---------------|
 | `brazilian_postalcode` | Brazilian postal code formatter | `str`, `int` | `XXXXX-XXX` |
+| `brazilian_cnpj` | Brazilian CNPJ formatter | `str`, `int` | `XX.XXX.XXX/XXXX-XX` |
 
 ### Core Methods
 
@@ -94,7 +96,7 @@ print(is_valid)  # True
 ```python
 # List available drivers
 drivers = manager.list_drivers()
-print(drivers)  # ["brazilian_postalcode"]
+print(drivers)  # ["brazilian_postalcode", "brazilian_cnpj"]
 
 # Check driver availability
 has_driver = manager.has_driver("brazilian_postalcode")
@@ -317,6 +319,145 @@ brasilapi_address = manager.get("88304053", driver="brasilapi")
 
 assert viacep_address.postal_code == brasilapi_address.postal_code
 # Both return "88304-053"
+```
+
+## CompanyManager
+
+The CompanyManager orchestrates Brazilian company (CNPJ) data lookup drivers to provide comprehensive business information.
+
+### Purpose
+
+Manages drivers that retrieve company data from Brazilian government sources, providing unified access to business registration information, addresses, and operational details.
+
+### Location
+- **File**: `python/src/managers/company_manager.py`
+- **Class**: `CompanyManager`
+- **Contract**: Implements `ManagerContract`
+
+### Available Drivers
+
+- **brasilapi**: BrasilAPI company data service (free, reliable, fast)
+- **cnpja**: CNPJA.com company data service (free, rate limited)
+- **opencnpj**: OpenCNPJ.org company data service (free, community-driven)
+- **cnpjws**: CNPJ.ws company data service (free, comprehensive data, strict rate limiting)
+
+### Key Features
+
+- **CNPJ Validation**: Automatic formatting and validation of Brazilian company registration numbers
+- **First-to-Respond**: Concurrent driver execution for optimal performance
+- **Address Resolution**: Automatic postal code lookup for complete addresses when needed
+- **Comprehensive Data**: Business activities, status, contact information, and legal details
+- **Error Handling**: Robust error management with specific error codes
+
+### Basic Usage
+
+```python
+from managers.company_manager import CompanyManager
+
+# Initialize manager
+manager = CompanyManager()
+
+# Basic company lookup
+company = manager.get("11.222.333/0001-81")
+print(f"Company: {company.get_display_name()}")
+print(f"Status: {company.status}")
+print(f"Active: {company.is_active()}")
+
+# Access detailed information
+print(f"Legal Name: {company.legal_name}")
+print(f"Trade Name: {company.trade_name}")
+print(f"Activity: {company.primary_activity}")
+print(f"Phone: {company.phone}")
+print(f"Email: {company.email}")
+
+if company.address:
+    print(f"Address: {company.get_full_address()}")
+```
+
+### First-to-Respond Pattern
+
+```python
+# Synchronous first-to-respond (recommended)
+company = manager.get_first_response_sync("11.222.333/0001-81")
+print(f"Fastest driver: {company.verification_source}")
+
+# Asynchronous first-to-respond
+import asyncio
+company = asyncio.run(manager.get_first_response("11.222.333/0001-81"))
+
+# With configuration
+company = manager.get_first_response_sync(
+    "11.222.333/0001-81",
+    drivers=["brasilapi"],  # Specific drivers
+    timeout=5.0  # Custom timeout
+)
+```
+
+### Driver Management
+
+```python
+# List available drivers
+drivers = manager.list_drivers()
+print(f"Available drivers: {drivers}")
+# Output: ['brasilapi', 'cnpja', 'opencnpj', 'cnpjws']
+
+# Get driver information
+info = manager.get_driver_info("brasilapi")
+print(f"Description: {info['description']}")
+print(f"Version: {info['version']}")
+
+# Load specific driver
+driver = manager.load("brasilapi")
+company = driver.get("11.222.333/0001-81")
+```
+
+### Error Handling
+
+```python
+from standards.core.base import ValidationError
+
+try:
+    company = manager.get_first_response_sync("invalid-cnpj")
+except ValidationError as e:
+    print(f"Validation error: {e}")
+except Exception as e:
+    print(f"API error: {e}")
+```
+
+### Company Data Model
+
+The CompanyManager returns `Company` objects with comprehensive business information:
+
+```python
+# Company object structure
+company = manager.get("11.222.333/0001-81")
+
+# Basic identification
+print(f"CNPJ: {company.cnpj}")  # Formatted CNPJ
+print(f"Legal Name: {company.legal_name}")  # Razão social
+print(f"Trade Name: {company.trade_name}")  # Nome fantasia
+
+# Status and registration
+print(f"Status: {company.status}")  # ATIVA, SUSPENSA, etc.
+print(f"Registration Date: {company.registration_date}")
+
+# Business information
+print(f"Primary Activity: {company.primary_activity}")  # CNAE description
+print(f"Company Size: {company.company_size}")  # Porte
+print(f"Share Capital: {company.share_capital}")  # Capital social
+
+# Contact information
+print(f"Phone: {company.phone}")
+print(f"Email: {company.email}")
+
+# Address (if available)
+if company.address:
+    print(f"Full Address: {company.get_full_address()}")
+
+# Metadata
+print(f"Source: {company.verification_source}")
+print(f"Last Updated: {company.last_updated}")
+print(f"Verified: {company.is_verified}")
 ```
 
 ## Usage Patterns

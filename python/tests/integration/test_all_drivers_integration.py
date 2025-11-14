@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from managers.postalcode_manager import PostalCodeManager
 from standards.address import Address
-from validation_base import ValidationError
+from standards.core.base import ValidationError
 
 
 class TestAllDriversIntegration(unittest.TestCase):

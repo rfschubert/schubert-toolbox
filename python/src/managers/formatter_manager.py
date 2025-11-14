@@ -71,6 +71,23 @@ class FormatterManager(AbstractManagerContract):
         except ImportError as e:
             logger.warning("Failed to register Brazilian Postal Code formatter: %s", e)
 
+        # Register Brazilian CNPJ formatter
+        try:
+            from drivers.formatter.formatter_brazilian_cnpj_driver import (
+                FormatterBrazilianCnpjDriver,
+            )
+
+            self.register_driver(
+                "brazilian_cnpj",
+                FormatterBrazilianCnpjDriver,
+                description="Brazilian CNPJ (company registration) formatter",
+                version="1.0.0",
+                country="BR",
+            )
+            logger.debug("Registered Brazilian CNPJ formatter")
+        except ImportError as e:
+            logger.warning("Failed to register Brazilian CNPJ formatter: %s", e)
+
     def load(self, driver_name: str, **config) -> Any:
         """
         Load and configure a formatter driver.

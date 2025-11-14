@@ -278,6 +278,131 @@ print(f"Street: {address.get_full_street_address()}")
 
 ## Advanced Usage Patterns
 
+### First-to-Respond Pattern
+
+The PostalCodeManager includes a powerful first-to-respond feature that executes multiple drivers concurrently and returns the first successful response. This significantly improves performance and reliability.
+
+#### Basic Usage
+
+```python
+from managers.postalcode_manager import PostalCodeManager
+
+manager = PostalCodeManager()
+
+# Synchronous first-to-respond (recommended for most use cases)
+address = manager.get_first_response_sync("88304-053")
+print(f"Fastest driver: {address.verification_source}")
+print(f"Address: {address.get_display_name()}")
+```
+
+#### Asynchronous Usage
+
+```python
+import asyncio
+from managers.postalcode_manager import PostalCodeManager
+
+async def lookup_address():
+    manager = PostalCodeManager()
+    address = await manager.get_first_response("88304-053")
+    return address
+
+# Run async function
+address = asyncio.run(lookup_address())
+print(f"Driver: {address.verification_source}")
+```
+
+#### Advanced Configuration
+
+```python
+# Specify which drivers to use
+address = manager.get_first_response_sync(
+    "88304-053",
+    drivers=["viacep", "brasilapi"],  # Only use these drivers
+    timeout=5.0  # Maximum wait time in seconds
+)
+
+# Use all available drivers (default)
+address = manager.get_first_response_sync("88304-053")
+```
+
+#### Performance Benefits
+
+The first-to-respond pattern provides significant performance improvements:
+
+```python
+import time
+
+# Traditional sequential approach
+start = time.time()
+try:
+    viacep = manager.load("viacep")
+    address = viacep.get("88304-053")
+except:
+    try:
+        brasilapi = manager.load("brasilapi")
+        address = brasilapi.get("88304-053")
+    except:
+        widenet = manager.load("widenet")
+        address = widenet.get("88304-053")
+sequential_time = time.time() - start
+
+# First-to-respond approach
+start = time.time()
+address = manager.get_first_response_sync("88304-053")
+concurrent_time = time.time() - start
+
+print(f"Sequential: {sequential_time:.3f}s")
+print(f"Concurrent: {concurrent_time:.3f}s")
+print(f"Speedup: {sequential_time/concurrent_time:.1f}x faster")
+```
+
+#### Error Handling
+
+```python
+from validation_base import ValidationError
+
+try:
+    address = manager.get_first_response_sync("00000-000")  # Invalid CEP
+except ValidationError as e:
+    if e.error_code == "POSTAL_CODE_ALL_DRIVERS_FAILED":
+        print("All drivers failed to find the postal code")
+    elif e.error_code == "POSTAL_CODE_TIMEOUT":
+        print("Request timed out")
+    elif e.error_code == "POSTAL_CODE_NO_DRIVERS":
+        print("No drivers available")
+    else:
+        print(f"Validation error: {e}")
+```
+
+#### Best Practices
+
+**Use Cases for First-to-Respond:**
+- High-performance applications requiring fast response times
+- Applications needing maximum reliability (fallback to multiple APIs)
+- Batch processing where speed is critical
+- Real-time applications with strict latency requirements
+
+**Configuration Recommendations:**
+```python
+# For production applications
+address = manager.get_first_response_sync(
+    postal_code,
+    timeout=10.0,  # Reasonable timeout
+    drivers=["viacep", "brasilapi"]  # Most reliable drivers
+)
+
+# For development/testing
+address = manager.get_first_response_sync(
+    postal_code,
+    timeout=30.0  # Longer timeout for debugging
+)
+```
+
+**Driver Selection Strategy:**
+- **All drivers** (default): Maximum reliability, may be slower
+- **Specific drivers**: Faster, but less fallback options
+- **Recommended combination**: `["viacep", "brasilapi"]` for best balance
+
 ### Error Handling with Direct Drivers
 
 ```python

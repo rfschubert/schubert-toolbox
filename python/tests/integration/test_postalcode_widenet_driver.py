@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from drivers.postalcode.postalcode_widenet_driver import PostalCodeWidenetDriver
 from standards.address import Address, Country
-from validation_base import ValidationError
+from standards.core.base import ValidationError
 
 
 class TestPostalCodeWidenetDriverIntegration(unittest.TestCase):
