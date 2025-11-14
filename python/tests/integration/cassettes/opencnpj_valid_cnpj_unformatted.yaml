@@ -1,0 +1,28 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Schubert-Toolbox/1.0
+    method: GET
+    uri: https://api.opencnpj.org/11222333000181
+  response:
+    body:
+      string: '{"cnpj":"11222333000181","razao_social":"CAIXA ESCOLAR DA ESCOLA ESTADUAL DE ENSINO FUNDAMENTAL JOSEFINA JACQUES NORONHA","nome_fantasia":"CAIXA ESCOLA DA ESCOLA ESTADUAL DE ENSINO FUNDAMENTAL J","situacao_cadastral":"Ativa","data_situacao_cadastral":"2009-09-02","matriz_filial":"Matriz","data_inicio_atividade":"2009-09-02","cnae_principal":"8550301","cnaes_secundarios":[],"natureza_juridica":"Associação Privada","logradouro":"GARIBALDI","numero":"070","complemento":"","bairro":"VILA RICA","cep":"95760000","uf":"RS","municipio":"SAO SEBASTIAO DO CAI","email":"josefinanoronha@hotmail.com","telefones":[{"ddd":"51","numero":"36354333","is_fax":false},{"ddd":"51","numero":"36351603","is_fax":false},{"ddd":"51","numero":"36351500","is_fax":true}],"capital_social":"0,00","porte_empresa":"Demais","opcao_simples":"","data_opcao_simples":"","opcao_mei":"","data_opcao_mei":"","QSA":[{"nome_socio":"CLAUDIA KICH DA SILVA","cnpj_cpf_socio":"***354400**","qualificacao_socio":"Presidente","data_entrada_sociedade":"2016-09-29","identificador_socio":"Pessoa Física","faixa_etaria":"51 a 60 anos"}]}'
+    headers:
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Thu, 14 Nov 2024 12:00:00 GMT
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+version: 1

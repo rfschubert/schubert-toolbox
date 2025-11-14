@@ -1,0 +1,28 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Schubert-Toolbox/1.0
+    method: GET
+    uri: https://api.opencnpj.org/00000000000100
+  response:
+    body:
+      string: '{"code":"not_found","message":"File with such name does not exist.","status":404}'
+    headers:
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Thu, 14 Nov 2024 12:00:00 GMT
+      Server:
+      - cloudflare
+    status:
+      code: 404
+      message: Not Found
+version: 1

@@ -1,0 +1,52 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: https://cdn.apicep.com/file/apicep/88304-053.json
+  response:
+    body:
+      string: '{"status":429,"ok":false,"message":"Blocked by flood cdn","statusText":"bad_request"}'
+    headers:
+      CF-RAY:
+      - 99e4d6ce3c0c167d-NVT
+      Cache-Control:
+      - public, max-age=31536000, stale-while-revalidate=31536000, immutable
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '85'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 14 Nov 2025 07:36:39 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:01 GMT
+      Nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      Referrer-Policy:
+      - same-origin
+      Report-To:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=vM1%2FmrTsl402M4mNENS%2F0k0h00q3a2lbGrm3YWXu3NmezG56%2F%2FHTGJ59navEtg8SmQA043Tt6iAdEHtSS%2FLkjarvhuaV%2F6PxoiLKFrT0O%2BGMJfgllDD3Ag%3D%3D"}]}'
+      Retry-After:
+      - '5'
+      Server:
+      - cloudflare
+      Vary:
+      - accept-encoding
+      X-Frame-Options:
+      - SAMEORIGIN
+      alt-svc:
+      - h3=":443"; ma=86400
+    status:
+      code: 429
+      message: Too Many Requests
+version: 1

@@ -1,0 +1,28 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Schubert-Toolbox/1.0
+    method: GET
+    uri: https://open.cnpja.com/office/00000000000100
+  response:
+    body:
+      string: '<!DOCTYPE html><html lang="en"><head><title>Vercel Security Checkpoint</title></head><body><h1>Security Checkpoint</h1><p>Please wait while we verify your request...</p></body></html>'
+    headers:
+      Content-Type:
+      - text/html; charset=utf-8
+      Date:
+      - Thu, 14 Nov 2025 12:00:00 GMT
+      Server:
+      - vercel
+    status:
+      code: 403
+      message: Forbidden
+version: 1

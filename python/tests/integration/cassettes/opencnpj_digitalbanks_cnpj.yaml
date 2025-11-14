@@ -1,0 +1,28 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Schubert-Toolbox/1.0
+    method: GET
+    uri: https://api.opencnpj.org/15280995000169
+  response:
+    body:
+      string: '{"cnpj":"15280995000169","razao_social":"DIGITALBANKS TECNOLOGIA LTDA","nome_fantasia":"","situacao_cadastral":"Inapta","data_situacao_cadastral":"2021-03-18","matriz_filial":"Matriz","data_inicio_atividade":"2012-03-28","cnae_principal":"8599603","cnaes_secundarios":["4751201"],"natureza_juridica":"Sociedade Empresária Limitada","logradouro":"MANOEL VIEIRA GARCAO","numero":"10","complemento":"SALA 302;BOX 54","bairro":"CENTRO","cep":"88301425","uf":"SC","municipio":"ITAJAI","email":"","telefones":[{"ddd":"47","numero":"92895854","is_fax":false}],"capital_social":"500000,00","porte_empresa":"Empresa de Pequeno Porte (EPP)","opcao_simples":"N","data_opcao_simples":"2012-03-28","opcao_mei":"N","data_opcao_mei":"2012-03-28","QSA":[{"nome_socio":"RAPHAEL FILIPE SCHUBERT","cnpj_cpf_socio":"***703749**","qualificacao_socio":"Sócio-Administrador","data_entrada_sociedade":"2018-08-20","identificador_socio":"Pessoa Física","faixa_etaria":"31 a 40 anos"},{"nome_socio":"RODRIGO ANTONIO DIAS CORAZZA","cnpj_cpf_socio":"***613638**","qualificacao_socio":"Sócio-Administrador","data_entrada_sociedade":"2018-10-09","identificador_socio":"Pessoa Física","faixa_etaria":"51 a 60 anos"}]}'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Thu, 14 Nov 2025 12:00:00 GMT
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+version: 1

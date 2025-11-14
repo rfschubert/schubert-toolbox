@@ -1,0 +1,28 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Schubert-Toolbox/1.0
+    method: GET
+    uri: https://publica.cnpj.ws/cnpj/11222333000181
+  response:
+    body:
+      string: '{"cnpj_raiz":"11222333","razao_social":"CAIXA ESCOLAR DA ESCOLA ESTADUAL DE ENSINO FUNDAMENTAL JOSEFINA JACQUES NORONHA","capital_social":"0.00","responsavel_federativo":"","atualizado_em":"2025-11-08T03:00:00.000Z","porte":{"id":"01","descricao":"Microempresa"},"natureza_juridica":{"id":"3999","descricao":"Outras formas de organização social"},"qualificacao_do_responsavel":{"id":10,"descricao":"Diretor"},"socios":[],"simples":null,"estabelecimento":{"cnpj":"11222333000181","atividades_secundarias":[],"cnpj_raiz":"11222333","cnpj_ordem":"0001","cnpj_digito_verificador":"81","tipo":"Matriz","nome_fantasia":"","situacao_cadastral":"Ativa","data_situacao_cadastral":"2008-11-03","data_inicio_atividade":"2008-11-03","nome_cidade_exterior":null,"tipo_logradouro":"RUA","logradouro":"GENERAL OSORIO","numero":"1328","complemento":"","bairro":"CENTRO","cep":"95760000","ddd1":"51","telefone1":"36770000","ddd2":null,"telefone2":null,"ddd_fax":null,"fax":null,"email":"","situacao_especial":null,"data_situacao_especial":null,"atualizado_em":"2025-11-08T03:00:00.000Z","atividade_principal":{"id":"9430800","secao":"T","divisao":"94","grupo":"94.3","classe":"94.30-8","subclasse":"9430-8/00","descricao":"Atividades de associações de defesa de direitos sociais"},"pais":{"id":"1058","iso2":"BR","iso3":"BRA","nome":"Brasil","comex_id":"105"},"estado":{"id":23,"nome":"Rio Grande do Sul","sigla":"RS","ibge_id":43},"cidade":{"id":4063,"nome":"São Sebastião do Caí","ibge_id":4318705,"siafi_id":"8801"},"motivo_situacao_cadastral":null,"inscricoes_estaduais":[]}}'
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Fri, 14 Nov 2025 07:23:12 GMT
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+version: 1
