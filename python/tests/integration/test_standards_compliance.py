@@ -37,6 +37,7 @@ class TestStandardsCompliance:
             PostalCodeViacepDriver(),
             PostalCodeWidenetDriver(),
             PostalCodeBrasilApiDriver()
+            # Note: Correios drivers were removed due to API authentication issues
         ]
 
         for driver in drivers:
